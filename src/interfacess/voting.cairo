@@ -15,25 +15,29 @@ pub struct Poll {
     pub desc: ByteArray,
     pub yes_votes: u256,
     pub no_votes: u256,
-    pub status: Pollstatus,
+    pub status: PollStatus,
 }
 
 #[generate_trait]
 pub impl PollImpl of PollTrait {
-    fn resolve(self: Poll) {
-        assert(self.yes_votes + self.no_votes >= DEFAULT_THREASHOLD, 'COULD NOT RESOLVE')
+    fn resolve(ref self: Poll) {
+        assert(self.yes_votes + self.no_votes >= DEFAULT_THREASHOLD, 'COULD NOT RESOLVE');
         let mut status = false;
         if self.yes_votes > self.no_votes{
             status = true;
         }
+
+    self.status = PollStatus::Finished(status);
+
     }
+
 }
 
 #[derive(Drop, Copy, Default, Serde, PartialEq, starknet::Store)]
-pub enum Pollstatus {
+pub enum PollStatus {
     #[default]
     pending,
-    finished,
+    Finished: bool,
 }
 #[derive(Drop, starknet::Event)]
 pub struct voted {

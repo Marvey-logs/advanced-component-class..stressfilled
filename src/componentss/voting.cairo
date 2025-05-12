@@ -1,7 +1,8 @@
 #[starknet::component]
 pub mod VotingComponent {
 
-    use starknet::{ContractAddress, get_caller_address};
+    use crate::interfacess::voting::PollTrait;
+use starknet::{ContractAddress, get_caller_address};
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map};
     use crate::interfacess::voting::*;
 
@@ -48,14 +49,18 @@ pub mod VotingComponent {
 
             let vote_count = poll.yes_votes + poll.no_votes;
             if vote_count >= DEFAULT_THREASHOLD {
-
+                poll.resolve();
+                
             }
+            self.poll.entry(id).write(poll);
+            self.voters.entry((caller, id)).write(true);
+            self.emit(voted {id, voter: caller});
         }
         fn resolve_poll(ref self: ComponentState<TContractState>, id: u256){
 
         }
         fn get_poll(self: @ComponentState<TContractState>, id: u256){
-
+            self.poll.entry(id).read();
         }
     }
         
